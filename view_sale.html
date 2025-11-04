@@ -35,7 +35,6 @@
       .container, .btn, .d-flex, .card {
         display: none !important;
       }
-    }
       
       .receipt-template {
         display: block !important;
@@ -179,20 +178,26 @@
     }
     
     @media print {
-      @page {
-        size: 80mm auto !important;
-        margin: 0 !important;
+      html, body {
+        width: 100% !important;
       }
-      
+
       body {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: flex-start !important;
+        background: #fff !important;
         margin: 0 !important;
         padding: 0 !important;
-        background: white !important;
       }
-      
-      * {
-        -webkit-print-color-adjust: exact !important;
-        color-adjust: exact !important;
+
+      .receipt-template,
+      #receipt-roll-template,
+      #receipt-roll-template .receipt-container {
+        width: 80mm !important;
+        max-width: 80mm !important;
+        margin: 0 auto !important;
+        float: none !important;
       }
     }
 
@@ -784,7 +789,6 @@
             <title>فاتورة مبيعات</title>
             <style>
               body{margin:0;padding:0;font-family:Arial,Tahoma,sans-serif;font-size:18px;line-height:1.4;color:#000;background:#fff;direction:rtl;text-align:right;-webkit-print-color-adjust:exact;color-adjust:exact;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;}
-              @media print{ @page{ size:80mm auto; margin:0; } body{display:block;} }
               .receipt-container{ width:65mm !important; max-width:65mm !important; margin:0 auto !important; padding:0 !important; box-sizing:border-box; display:block; }
               .receipt-header{ text-align:center; margin-bottom:15px; border-bottom:1px solid #000; padding-bottom:10px; }
               .company-info h1{ font-size:26px; margin:0 0 8px 0; font-weight:bold; text-align:center; }
@@ -812,6 +816,7 @@
               .receipt-footer{ text-align:center; margin-top:20px; border-top:1px solid #000; padding-top:10px; }
               .receipt-footer h4{ font-size:18px; margin:0 0 8px 0; font-weight:bold; }
               .receipt-footer p{ margin:3px 0; font-size:14px; }
+              @media print{ @page{ size:80mm auto; margin:0; } body{display:flex !important; justify-content:center !important; align-items:flex-start !important;} }
             </style>
           </head>
           <body>${receiptHTML}</body>
