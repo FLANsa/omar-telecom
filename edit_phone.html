@@ -104,7 +104,16 @@
                 </div>
                 <div class="col-md-4">
                   <label for="phone_memory" class="form-label">الذاكرة</label>
-                  <input type="text" class="form-control" id="phone_memory">
+                  <select class="form-select" id="phone_memory">
+                    <option value="">اختر الذاكرة</option>
+                    <option value="32GB">32GB</option>
+                    <option value="64GB">64GB</option>
+                    <option value="128GB">128GB</option>
+                    <option value="256GB">256GB</option>
+                    <option value="512GB">512GB</option>
+                    <option value="1TB">1TB</option>
+                    <option value="أخرى">أخرى</option>
+                  </select>
                 </div>
                 <div class="col-md-4">
                   <label for="serial_number" class="form-label">الرقم التسلسلي</label>
@@ -287,7 +296,23 @@
           }
           
           document.getElementById('phone_color').value = phone.phone_color || '';
-          document.getElementById('phone_memory').value = phone.phone_memory || phone.memory || '';
+          
+          // تعيين قيمة الذاكرة مع إضافة الخيار إذا لم يكن موجوداً في القائمة
+          const memoryValue = phone.phone_memory || phone.memory || '';
+          const memorySelect = document.getElementById('phone_memory');
+          if (memoryValue) {
+            // التحقق من وجود القيمة في القائمة
+            const optionExists = Array.from(memorySelect.options).some(opt => opt.value === memoryValue);
+            if (!optionExists && memoryValue !== '') {
+              // إضافة القيمة كخيار جديد إذا لم تكن موجودة
+              const newOption = document.createElement('option');
+              newOption.value = memoryValue;
+              newOption.textContent = memoryValue;
+              memorySelect.appendChild(newOption);
+            }
+            memorySelect.value = memoryValue;
+          }
+          
           document.getElementById('serial_number').value = phone.serial_number || '';
           document.getElementById('purchase_price').value = phone.purchase_price || '';
           document.getElementById('selling_price').value = phone.selling_price || phone.price || '';
