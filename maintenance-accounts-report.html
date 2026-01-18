@@ -310,7 +310,7 @@
             <!-- Header -->
             <div class="report-header">
                 <h1 id="reportTitle">تقرير حسابات المندوبين</h1>
-                <p class="company-name">الركبي للاتصالات للاتصالات</p>
+                <p class="company-name">الركبي للاتصالات</p>
                 <p class="report-date" id="reportDate"></p>
             </div>
             
@@ -343,7 +343,12 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             parseFilters();
-            setTimeout(loadReportData, 1000);
+            // انتظار تحميل Firebase فقط إذا لم يكن جاهزاً
+            if (window.firebaseDatabase) {
+                loadReportData();
+            } else {
+                setTimeout(loadReportData, 500);
+            }
         });
 
         function parseFilters() {
@@ -358,9 +363,13 @@
 
         async function loadReportData() {
             try {
+                // انتظار Firebase إذا لم يكن جاهزاً
                 if (!window.firebaseDatabase) {
-                    showError('قاعدة البيانات غير متاحة');
-                    return;
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    if (!window.firebaseDatabase) {
+                        showError('قاعدة البيانات غير متاحة');
+                        return;
+                    }
                 }
 
                 if (!filters.dateFrom || !filters.dateTo) {
@@ -372,9 +381,17 @@
                 const toDate = new Date(filters.dateTo);
                 toDate.setHours(23, 59, 59, 999);
 
-                [repsData, techniciansData, jobsData, paymentsData] = await Promise.all([
+                // تحميل البيانات الأساسية فقط (المندوبين والفنيين)
+                // ثم تحميل الأعمال والمدفوعات بعدها
+                const [reps, techs] = await Promise.all([
                     window.firebaseDatabase.getReps(),
-                    window.firebaseDatabase.getTechnicians(),
+                    window.firebaseDatabase.getTechnicians()
+                ]);
+                repsData = reps;
+                techniciansData = techs;
+                
+                // تحميل الأعمال والمدفوعات
+                const [jobs, payments] = await Promise.all([
                     window.firebaseDatabase.getMaintenanceJobs({
                         status: 'done',
                         dateFrom: fromDate,
@@ -385,12 +402,14 @@
                         dateTo: toDate
                     })
                 ]);
+                jobsData = jobs;
+                paymentsData = payments;
 
                 displayReport();
                 
             } catch (error) {
                 console.error('Error:', error);
-                showError('حدث خطأ في تحميل البيانات');
+                showError('حدث خطأ في تحميل البيانات: ' + error.message);
             }
         }
 
