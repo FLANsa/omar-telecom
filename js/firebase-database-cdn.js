@@ -615,18 +615,44 @@ class FirebaseDatabase {
 
   async updateMaintenanceJob(jobId, jobData) {
     try {
-      // ✅ إعادة حساب الأرباح إذا تغيرت القيم باستخدام الدالة الموحدة
-      if (jobData.partCost !== undefined || jobData.amountCharged !== undefined || jobData.techPercent !== undefined) {
+      // ✅ إذا كانت القيم محسوبة مسبقاً (مثل عند completeJob)، استخدمها مباشرة
+      if (jobData.profit !== undefined && jobData.techCommission !== undefined && jobData.shopProfit !== undefined) {
+        // القيم محسوبة مسبقاً، لا حاجة لإعادة الحساب
+        console.log('✅ استخدام القيم المحسوبة مسبقاً:', {
+          profit: jobData.profit,
+          techCommission: jobData.techCommission,
+          shopProfit: jobData.shopProfit
+        });
+      } else {
+        // ✅ إعادة حساب الأرباح إذا تغيرت القيم
         const currentJob = await this.getMaintenanceJob(jobId);
-        const partCost = jobData.partCost !== undefined ? jobData.partCost : currentJob.partCost;
+        
+        // حساب totalPartCost من البنية الجديدة أو القديمة
+        let totalPartCost = 0;
+        if (jobData.totalPartCost !== undefined) {
+          totalPartCost = Number(jobData.totalPartCost) || 0;
+        } else if (jobData.parts && Array.isArray(jobData.parts) && jobData.parts.length > 0) {
+          totalPartCost = jobData.parts.reduce((sum, part) => sum + (Number(part.partCost) || 0), 0);
+        } else if (jobData.partCost !== undefined) {
+          totalPartCost = Number(jobData.partCost) || 0;
+        } else if (currentJob.totalPartCost !== undefined) {
+          totalPartCost = Number(currentJob.totalPartCost) || 0;
+        } else if (currentJob.parts && Array.isArray(currentJob.parts) && currentJob.parts.length > 0) {
+          totalPartCost = currentJob.parts.reduce((sum, part) => sum + (Number(part.partCost) || 0), 0);
+        } else if (currentJob.partCost !== undefined) {
+          totalPartCost = Number(currentJob.partCost) || 0;
+        }
+        
         const amountCharged = jobData.amountCharged !== undefined ? jobData.amountCharged : currentJob.amountCharged;
         const techPercent = jobData.techPercent !== undefined ? jobData.techPercent : currentJob.techPercent;
         
-        const { profit, techCommission, shopProfit } = this.computeDerived(partCost, amountCharged, techPercent);
-        
-        jobData.profit = profit;
-        jobData.techCommission = techCommission;
-        jobData.shopProfit = shopProfit;
+        if (totalPartCost !== undefined && amountCharged !== undefined) {
+          const { profit, techCommission, shopProfit } = this.computeDerived(totalPartCost, amountCharged, techPercent || 0);
+          
+          jobData.profit = profit;
+          jobData.techCommission = techCommission;
+          jobData.shopProfit = shopProfit;
+        }
       }
 
       const jobRef = doc(this.db, 'maintenanceJobs', jobId);

@@ -192,7 +192,7 @@
                       </div>
                     </div>
                     <div class="col-md-6 text-end">
-                      <button type="button" class="btn btn-success btn-lg" onclick="completeSale()" id="complete_sale_btn" disabled>
+                      <button type="button" class="btn btn-success btn-lg" id="complete_sale_btn" disabled>
                         <i class="fas fa-check"></i> إتمام عملية البيع
                       </button>
                     </div>
@@ -229,6 +229,7 @@
     let accessoryCategories = [];
     let sales = [];
     let cart = [];
+    let isProcessing = false; // ✅ حماية من التنفيذ المتكرر
 
     // ملاحظة: نتوقع أن window.storage يوفّر الدوال التالية عندما تكون Firebase متاحة:
     // getPhones(), getAccessories(), getAccessoryCategories(), getSales()
@@ -272,6 +273,18 @@
       setupArabicNumberSupport();
       loadWarrantyOptions();
       loadProducts(); // أول تحميل
+      
+      // ✅ إضافة event listener للزر مع حماية من التكرار
+      const completeBtn = document.getElementById('complete_sale_btn');
+      if (completeBtn) {
+        completeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!isProcessing && cart.length > 0) {
+            completeSale();
+          }
+        });
+      }
     });
   
     // ====== تحميل البيانات ======
@@ -879,32 +892,71 @@
 
     // ====== إتمام عملية البيع (يحفظ في Firebase إن توفرت) ======
     async function completeSale() {
-      if (cart.length === 0) { alert('السلة فارغة'); return; }
-  
-      const total = cart.reduce((s, it) => s + it.totalPrice, 0);
-      const saleNumber = 'SALE-' + Date.now().toString().slice(-6);
-      const totalProfit = cart.reduce((s, it) => s + (it.totalProfit || 0), 0);
-      const totalPurchaseCost = cart.reduce((s, it) => s + ((it.purchasePrice || 0) * it.quantity), 0);
+      // ✅ حماية قوية من التنفيذ المتكرر - فحص أولي فوراً (قبل أي شيء)
+      if (isProcessing) {
+        console.log('⏳ العملية قيد التنفيذ، يرجى الانتظار...');
+        return;
+      }
 
-      const saleData = {
-        sale_number: saleNumber,
-        customer_name: document.getElementById('customer_name').value.trim() || 'عميل نقدي',
-        customer_phone: document.getElementById('customer_phone').value.trim() || '',
-        customer_email: document.getElementById('customer_email').value || '',
-        customer_address: document.getElementById('customer_address').value || '',
-        payment_method: document.getElementById('payment_method').value,
-        notes: document.getElementById('notes').value || '',
-        warranty: document.getElementById('warranty_input')?.value?.trim() || '',
-        items: cart,
-        total_amount: total,
-        total_purchase_cost: totalPurchaseCost,
-        total_profit: totalProfit,
-        status: 'مكتمل',
-        date_created: new Date().toISOString(),
-        date_added: new Date().toISOString()
+      // ✅ تعطيل فوراً قبل أي فحص آخر
+      isProcessing = true;
+
+      if (cart.length === 0) { 
+        isProcessing = false; // إعادة التعيين إذا كانت السلة فارغة
+        alert('السلة فارغة'); 
+        return; 
+      }
+      const completeBtn = document.getElementById('complete_sale_btn');
+      if (!completeBtn) {
+        console.error('❌ زر إتمام البيع غير موجود');
+        isProcessing = false;
+        return;
+      }
+      
+      // ✅ تعطيل الزر فوراً قبل أي عملية أخرى
+      const originalBtnText = completeBtn.innerHTML;
+      completeBtn.disabled = true;
+      completeBtn.style.pointerEvents = 'none'; // ✅ منع أي تفاعل مع الزر
+      completeBtn.style.opacity = '0.6'; // ✅ إظهار أنه معطل
+      completeBtn.style.cursor = 'not-allowed'; // ✅ تغيير شكل المؤشر
+      completeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري المعالجة...';
+      
+      // ✅ حماية إضافية: إزالة event listener مؤقتاً
+      const tempHandler = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
       };
+      completeBtn.addEventListener('click', tempHandler, true);
+      
+      // ✅ حفظ المرجع للاستخدام في catch
+      const btnRef = { completeBtn, originalBtnText, tempHandler };
   
       try {
+        const total = cart.reduce((s, it) => s + it.totalPrice, 0);
+        const saleNumber = 'SALE-' + Date.now().toString().slice(-6);
+        const totalProfit = cart.reduce((s, it) => s + (it.totalProfit || 0), 0);
+        const totalPurchaseCost = cart.reduce((s, it) => s + ((it.purchasePrice || 0) * it.quantity), 0);
+
+        const saleData = {
+          sale_number: saleNumber,
+          customer_name: document.getElementById('customer_name').value.trim() || 'عميل نقدي',
+          customer_phone: document.getElementById('customer_phone').value.trim() || '',
+          customer_email: document.getElementById('customer_email').value || '',
+          customer_address: document.getElementById('customer_address').value || '',
+          payment_method: document.getElementById('payment_method').value,
+          notes: document.getElementById('notes').value || '',
+          warranty: document.getElementById('warranty_input')?.value?.trim() || '',
+          items: cart,
+          total_amount: total,
+          total_purchase_cost: totalPurchaseCost,
+          total_profit: totalProfit,
+          status: 'مكتمل',
+          date_created: new Date().toISOString(),
+          date_added: new Date().toISOString()
+        };
+    
         // تقليل مخزون الأكسسوارات المباعة
         await updateAccessoryStock();
 
@@ -921,18 +973,36 @@
 
         localStorage.setItem('lastSale', JSON.stringify(saleData));
         alert(`تم إنشاء عملية البيع!\nرقم العملية: ${saleNumber}\nالمجموع الإجمالي: ${total.toFixed(2)} ريال\nسعر الشراء: ${totalPurchaseCost.toFixed(2)} ريال`);
-  
-      cart = [];
-      updateCartDisplay();
+    
+        cart = [];
+        updateCartDisplay();
         document.getElementById('customerForm')?.reset?.();
         document.getElementById('warranty_input').value = '';
-  
+    
+        // ✅ تنظيف الحماية قبل الانتقال
+        isProcessing = false;
+        if (btnRef.completeBtn) {
+          btnRef.completeBtn.removeEventListener('click', btnRef.tempHandler, true);
+        }
+        
         setTimeout(() => {
           window.location.href = `view_sale.html?id=${saleData.id}`;
         }, 800);
       } catch (err) {
         console.error('❌ حفظ البيع:', err);
         alert('حدث خطأ في حفظ عملية البيع. حاول مرة أخرى.');
+        
+        // ✅ إعادة تفعيل الزر في حالة الخطأ
+        isProcessing = false;
+        if (btnRef.completeBtn) {
+          btnRef.completeBtn.disabled = false;
+          btnRef.completeBtn.style.pointerEvents = 'auto'; // ✅ إعادة تفعيل التفاعل
+          btnRef.completeBtn.style.opacity = '1'; // ✅ إعادة الشفافية
+          btnRef.completeBtn.style.cursor = 'pointer'; // ✅ إعادة شكل المؤشر
+          btnRef.completeBtn.innerHTML = btnRef.originalBtnText;
+          // ✅ إزالة الحماية المؤقتة
+          btnRef.completeBtn.removeEventListener('click', btnRef.tempHandler, true);
+        }
       }
     }
 
