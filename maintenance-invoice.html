@@ -437,33 +437,30 @@
             if (partsListEl) {
                 partsListEl.innerHTML = '';
                 
-                if (currentJob.parts && Array.isArray(currentJob.parts) && currentJob.parts.length > 0) {
-                    // الهيكل الجديد: عرض جميع القطع
-                    currentJob.parts.forEach((part, index) => {
+                    if (currentJob.parts && Array.isArray(currentJob.parts) && currentJob.parts.length > 0) {
+                        // الهيكل الجديد: عرض جميع القطع بدون إظهار اسم المندوب أو تكلفة القطعة
+                        currentJob.parts.forEach((part, index) => {
+                            const partDiv = document.createElement('div');
+                            partDiv.style.margin = '8px 0';
+                            partDiv.innerHTML = `
+                                <p style="margin: 4px 0;">
+                                    <strong>القطعة ${index + 1}:</strong> ${part.partName || 'غير محدد'}
+                                </p>
+                            `;
+                            partDiv.appendChild(document.createElement('hr'));
+                            partsListEl.appendChild(partDiv);
+                        });
+                    } else if (currentJob.partName) {
+                        // الهيكل القديم: عرض القطعة الواحدة بدون إظهار اسم المندوب أو تكلفة القطعة
                         const partDiv = document.createElement('div');
                         partDiv.style.margin = '8px 0';
                         partDiv.innerHTML = `
                             <p style="margin: 4px 0;">
-                                <strong>القطعة ${index + 1}:</strong> ${part.partName || 'غير محدد'}
-                                ${part.repName ? ` (مندوب: ${part.repName})` : ''}
-                                ${part.partCost ? ` - ${part.partCost.toFixed(2)} ريال` : ''}
+                                <strong>القطعة:</strong> ${currentJob.partName || 'غير محدد'}
                             </p>
                         `;
                         partsListEl.appendChild(partDiv);
-                    });
-                } else if (currentJob.partName) {
-                    // الهيكل القديم: عرض القطعة الواحدة
-                    const partDiv = document.createElement('div');
-                    partDiv.style.margin = '8px 0';
-                    partDiv.innerHTML = `
-                        <p style="margin: 4px 0;">
-                            <strong>القطعة:</strong> ${currentJob.partName || 'غير محدد'}
-                            ${currentJob.repName ? ` (مندوب: ${currentJob.repName})` : ''}
-                            ${currentJob.partCost ? ` - ${currentJob.partCost.toFixed(2)} ريال` : ''}
-                        </p>
-                    `;
-                    partsListEl.appendChild(partDiv);
-                } else {
+                    } else {
                     partsListEl.innerHTML = '<p style="margin: 4px 0;"><strong>القطعة:</strong> غير محدد</p>';
                 }
             }
@@ -730,28 +727,24 @@
                     partsListEl.innerHTML = '';
                     
                     if (currentJob.parts && Array.isArray(currentJob.parts) && currentJob.parts.length > 0) {
-                        // الهيكل الجديد: عرض جميع القطع
+                        // الهيكل الجديد: عرض جميع القطع بدون إظهار اسم المندوب أو تكلفة القطعة
                         currentJob.parts.forEach((part, index) => {
                             const partDiv = document.createElement('div');
                             partDiv.style.margin = '8px 0';
                             partDiv.innerHTML = `
                                 <p style="margin: 4px 0;">
                                     <strong>القطعة ${index + 1}:</strong> ${part.partName || 'غير محدد'}
-                                    ${part.repName ? ` (مندوب: ${part.repName})` : ''}
-                                    ${part.partCost ? ` - ${part.partCost.toFixed(2)} ريال` : ''}
                                 </p>
                             `;
                             partsListEl.appendChild(partDiv);
                         });
                     } else if (currentJob.partName) {
-                        // الهيكل القديم: عرض القطعة الواحدة
+                        // الهيكل القديم: عرض القطعة الواحدة بدون إظهار اسم المندوب أو تكلفة القطعة
                         const partDiv = document.createElement('div');
                         partDiv.style.margin = '8px 0';
                         partDiv.innerHTML = `
                             <p style="margin: 4px 0;">
                                 <strong>القطعة:</strong> ${currentJob.partName || 'غير محدد'}
-                                ${currentJob.repName ? ` (مندوب: ${currentJob.repName})` : ''}
-                                ${currentJob.partCost ? ` - ${currentJob.partCost.toFixed(2)} ريال` : ''}
                             </p>
                         `;
                         partsListEl.appendChild(partDiv);
