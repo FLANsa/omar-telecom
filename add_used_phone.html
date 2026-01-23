@@ -196,7 +196,7 @@
               </div>
 
               <div class="text-center">
-                <button type="submit" class="btn btn-primary">إضافة الهاتف المستعمل</button>
+                <button type="submit" class="btn btn-primary" id="add_used_phone_btn">إضافة الهاتف المستعمل</button>
                 <a href="dashboard.html" class="btn btn-secondary">عودة للوحة التحكم</a>
               </div>
             </form>
@@ -396,7 +396,29 @@
       return String(next).padStart(6,'0');
     }
 
+    let isProcessing = false; // ✅ حماية من التنفيذ المتكرر
+
     async function saveUsedPhoneToFirebase(){
+      // ✅ حماية فورية من التنفيذ المتكرر
+      if (isProcessing) {
+        console.log('⏳ العملية قيد التنفيذ، يرجى الانتظار...');
+        return false;
+      }
+      isProcessing = true;
+
+      // ✅ حفظ حالة الزر وإعداد حالة التحميل
+      const addBtn = document.getElementById('add_used_phone_btn');
+      let btnRef = null;
+      if (addBtn) {
+        const originalBtnText = addBtn.innerHTML;
+        addBtn.disabled = true;
+        addBtn.style.pointerEvents = 'none';
+        addBtn.style.opacity = '0.6';
+        addBtn.style.cursor = 'not-allowed';
+        addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري المعالجة...';
+        btnRef = { addBtn, originalBtnText };
+      }
+
       try{
         // Validate customer ID and phone number
         const customerId = document.getElementById('customer_id').value.trim();
@@ -405,12 +427,28 @@
         if (!customerId || customerId.length !== 10 || !/^[0-9]{10}$/.test(customerId)) {
           alert('رقم الهوية/الإقامة مطلوب ويجب أن يكون 10 أرقام');
           document.getElementById('customer_id').focus();
+          isProcessing = false;
+          if (btnRef && btnRef.addBtn) {
+            btnRef.addBtn.disabled = false;
+            btnRef.addBtn.style.pointerEvents = 'auto';
+            btnRef.addBtn.style.opacity = '1';
+            btnRef.addBtn.style.cursor = 'pointer';
+            btnRef.addBtn.innerHTML = btnRef.originalBtnText;
+          }
           return false;
         }
         
         if (!customerPhone || customerPhone.length !== 10 || !/^[0-9]{10}$/.test(customerPhone)) {
           alert('رقم هاتف العميل مطلوب ويجب أن يكون 10 أرقام');
           document.getElementById('customer_phone').focus();
+          isProcessing = false;
+          if (btnRef && btnRef.addBtn) {
+            btnRef.addBtn.disabled = false;
+            btnRef.addBtn.style.pointerEvents = 'auto';
+            btnRef.addBtn.style.opacity = '1';
+            btnRef.addBtn.style.cursor = 'pointer';
+            btnRef.addBtn.innerHTML = btnRef.originalBtnText;
+          }
           return false;
         }
 
@@ -419,6 +457,14 @@
         if (!batteryValue) {
           alert('يرجى إدخال نسبة البطارية');
           document.getElementById('age').focus();
+          isProcessing = false;
+          if (btnRef && btnRef.addBtn) {
+            btnRef.addBtn.disabled = false;
+            btnRef.addBtn.style.pointerEvents = 'auto';
+            btnRef.addBtn.style.opacity = '1';
+            btnRef.addBtn.style.cursor = 'pointer';
+            btnRef.addBtn.innerHTML = btnRef.originalBtnText;
+          }
           return false;
         }
 
@@ -477,6 +523,14 @@
           }
           
           if(savedOK){
+            isProcessing = false;
+            if (btnRef && btnRef.addBtn) {
+              btnRef.addBtn.disabled = false;
+              btnRef.addBtn.style.pointerEvents = 'auto';
+              btnRef.addBtn.style.opacity = '1';
+              btnRef.addBtn.style.cursor = 'pointer';
+              btnRef.addBtn.innerHTML = btnRef.originalBtnText;
+            }
             showAlert('success', 'تم تحديث الهاتف المستعمل بنجاح!');
             // إعادة توجيه إلى صفحة البحث
             setTimeout(() => {
@@ -498,14 +552,42 @@
           }
 
           if(savedOK){
+            isProcessing = false;
+            if (btnRef && btnRef.addBtn) {
+              btnRef.addBtn.disabled = false;
+              btnRef.addBtn.style.pointerEvents = 'auto';
+              btnRef.addBtn.style.opacity = '1';
+              btnRef.addBtn.style.cursor = 'pointer';
+              btnRef.addBtn.innerHTML = btnRef.originalBtnText;
+            }
             const shouldPrint = confirm('✅ تم إضافة الهاتف المستعمل!\n\nهل تريد طباعة الباركود؟');
             if(shouldPrint){ window.location.href = `print_barcode.html?phone_number=${encodeURIComponent(phoneData.phone_number)}`; }
             return true;
           }
         }
+        isProcessing = false;
+        if (btnRef && btnRef.addBtn) {
+          btnRef.addBtn.disabled = false;
+          btnRef.addBtn.style.pointerEvents = 'auto';
+          btnRef.addBtn.style.opacity = '1';
+          btnRef.addBtn.style.cursor = 'pointer';
+          btnRef.addBtn.innerHTML = btnRef.originalBtnText;
+        }
         alert('❌ تعذّر الحفظ'); return false;
 
-      }catch(err){ console.error(err); alert('❌ حدث خطأ في حفظ الهاتف.'); return false; }
+      }catch(err){ 
+        console.error(err); 
+        isProcessing = false;
+        if (btnRef && btnRef.addBtn) {
+          btnRef.addBtn.disabled = false;
+          btnRef.addBtn.style.pointerEvents = 'auto';
+          btnRef.addBtn.style.opacity = '1';
+          btnRef.addBtn.style.cursor = 'pointer';
+          btnRef.addBtn.innerHTML = btnRef.originalBtnText;
+        }
+        alert('❌ حدث خطأ في حفظ الهاتف.'); 
+        return false; 
+      }
     }
 
     // Add input validation for customer ID, phone, and battery age
@@ -643,7 +725,14 @@
       const editPhoneNumber = urlParams.get('edit');
       
       const form = document.querySelector('form');
-      form.addEventListener('submit', async (e)=>{ e.preventDefault(); if(await saveUsedPhoneToFirebase()){ form.reset(); await populateBrandsFromFirebase(); } });
+      form.addEventListener('submit', async (e)=>{ 
+        e.preventDefault(); 
+        e.stopPropagation();
+        if (!isProcessing && await saveUsedPhoneToFirebase()){ 
+          form.reset(); 
+          await populateBrandsFromFirebase(); 
+        } 
+      });
       await populateBrandsFromFirebase();
       setupInputValidation();
       setupArabicNumberSupport();
