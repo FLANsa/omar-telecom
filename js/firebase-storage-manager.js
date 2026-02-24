@@ -13,11 +13,20 @@ const CONFIG = {
   }
 };
 
-// Default data
+// Default data (تُستخدم عند عدم وصول Firebase أو عندما تكون القاعدة فارغة)
 const DEFAULT_PHONE_TYPES = {
-  "Apple": ["iPhone 13", "iPhone 14", "iPhone 15"],
-  "Samsung": ["S22", "S23", "S24"],
-  "Xiaomi": ["Redmi Note 12", "Mi 11"]
+  "Apple": ["iPhone 17 Pro Max", "iPhone 17 Pro", "iPhone 17", "iPhone 16 Pro Max", "iPhone 16 Pro", "iPhone 16", "iPhone 15 Pro Max", "iPhone 15 Pro", "iPhone 15", "iPhone 14 Pro Max", "iPhone 14 Pro", "iPhone 14", "iPhone 13 Pro Max", "iPhone 13 Pro", "iPhone 13", "iPhone 12", "iPhone 11", "iPhone X"],
+  "Samsung": ["Galaxy S25 Ultra", "Galaxy S25+", "Galaxy S25", "Galaxy S24 Ultra", "Galaxy S24+", "Galaxy S24", "Galaxy S23 Ultra", "Galaxy S23", "Galaxy A55", "Galaxy A54", "Galaxy A34", "Galaxy Note 20", "Galaxy Note 10"],
+  "Xiaomi": ["15 Ultra", "15 Pro", "15", "14 Ultra", "14 Pro", "14", "Redmi Note 14 Pro+", "Redmi Note 14 Pro", "Redmi Note 14", "Redmi Note 13 Pro", "Redmi Note 13"],
+  "Huawei": ["P60 Pro", "P60", "P50 Pro", "Mate 60 Pro", "Mate 50 Pro", "Nova 11", "Nova 10"],
+  "OnePlus": ["12", "11", "10 Pro", "10", "9 Pro", "Nord 3", "Nord 2"],
+  "Google": ["Pixel 8 Pro", "Pixel 8", "Pixel 7 Pro", "Pixel 7", "Pixel 6 Pro", "Pixel 6"],
+  "Oppo": ["Find X7 Ultra", "Find X6 Pro", "Find X6", "Reno 11 Pro", "Reno 11", "Reno 10 Pro", "Reno 10"],
+  "Honor": ["Magic 6 Pro", "Magic 6", "Magic 5 Pro", "X9b", "X9a", "90 Pro", "90"],
+  "Realme": ["GT 5 Pro", "GT 5", "GT Neo 5", "GT Neo 4"],
+  "Infinix": ["Zero 30", "Note 40 Pro", "Note 40", "Hot 40 Pro", "Hot 40"],
+  "Tecno": ["Phantom X2 Pro", "Camon 30 Pro", "Camon 30", "Spark 20 Pro", "Spark 20"],
+  "Nothing": ["Phone 2a", "Phone 2", "Phone 1"]
 };
 
 const DEFAULT_ACCESSORY_CATEGORIES = [
@@ -388,7 +397,7 @@ class FirebaseStorageManager {
         
         // Convert array to object format for compatibility with existing code
         const phoneTypesObj = {};
-        phoneTypes.forEach(type => {
+        (phoneTypes || []).forEach(type => {
           const manufacturer = type.manufacturer || type.brand; // Support both field names
           if (!phoneTypesObj[manufacturer]) {
             phoneTypesObj[manufacturer] = [];
@@ -396,14 +405,24 @@ class FirebaseStorageManager {
           phoneTypesObj[manufacturer].push(type.model);
         });
         console.log('🏭 Storage Manager: البيانات المحولة:', phoneTypesObj);
+        // عند عدم وجود بيانات (اتصال بطيء أو أوفلاين أو قاعدة فارغة) استخدم القائمة الافتراضية
+        if (Object.keys(phoneTypesObj).length === 0) {
+          console.log('ℹ️ Storage Manager: استخدام القائمة الافتراضية لأنواع الهواتف (Firebase فارغ أو غير متاح)');
+          return typeof DEFAULT_PHONE_TYPES !== 'undefined' ? { ...DEFAULT_PHONE_TYPES } : this.getItem(CONFIG.STORAGE_KEYS.PHONE_TYPES) || {};
+        }
         return phoneTypesObj;
       } catch (error) {
         console.error('❌ Storage Manager: خطأ في تحميل أنواع الهواتف من Firebase:', error);
-        return this.getItem(CONFIG.STORAGE_KEYS.PHONE_TYPES);
+        const local = this.getItem(CONFIG.STORAGE_KEYS.PHONE_TYPES);
+        if (local && Object.keys(local).length > 0) return local;
+        console.log('ℹ️ Storage Manager: استخدام القائمة الافتراضية لأنواع الهواتف');
+        return typeof DEFAULT_PHONE_TYPES !== 'undefined' ? { ...DEFAULT_PHONE_TYPES } : {};
       }
     }
     console.log('💾 Storage Manager: Firebase غير متاح، تحميل من localStorage...');
-    return this.getItem(CONFIG.STORAGE_KEYS.PHONE_TYPES);
+    const local = this.getItem(CONFIG.STORAGE_KEYS.PHONE_TYPES);
+    if (local && Object.keys(local).length > 0) return local;
+    return typeof DEFAULT_PHONE_TYPES !== 'undefined' ? { ...DEFAULT_PHONE_TYPES } : {};
   }
 
   async setPhoneTypes(phoneTypes) {
@@ -466,13 +485,20 @@ class FirebaseStorageManager {
   async getAccessoryCategories() {
     if (this.isFirebaseAvailable) {
       try {
-        return await this.firebaseDB.getAccessoryCategories();
+        const categories = await this.firebaseDB.getAccessoryCategories();
+        if (categories && categories.length > 0) return categories;
+        console.log('ℹ️ Storage Manager: استخدام القائمة الافتراضية لفئات الأكسسوارات');
+        return Array.isArray(DEFAULT_ACCESSORY_CATEGORIES) ? [...DEFAULT_ACCESSORY_CATEGORIES] : (this.getItem(CONFIG.STORAGE_KEYS.ACCESSORY_CATEGORIES) || []);
       } catch (error) {
         console.error('Error getting accessory categories from Firebase:', error);
-        return this.getItem(CONFIG.STORAGE_KEYS.ACCESSORY_CATEGORIES);
+        const local = this.getItem(CONFIG.STORAGE_KEYS.ACCESSORY_CATEGORIES);
+        if (local && local.length > 0) return local;
+        return Array.isArray(DEFAULT_ACCESSORY_CATEGORIES) ? [...DEFAULT_ACCESSORY_CATEGORIES] : [];
       }
     }
-    return this.getItem(CONFIG.STORAGE_KEYS.ACCESSORY_CATEGORIES);
+    const local = this.getItem(CONFIG.STORAGE_KEYS.ACCESSORY_CATEGORIES);
+    if (local && local.length > 0) return local;
+    return Array.isArray(DEFAULT_ACCESSORY_CATEGORIES) ? [...DEFAULT_ACCESSORY_CATEGORIES] : [];
   }
 
   async setAccessoryCategories(categories) {

@@ -25,19 +25,22 @@ class FirebaseDatabase {
   /** يُرجع الرقم التالي الفريد للهاتف (مثل "000001") من عداد في Firebase لضمان عدم التكرار. */
   async getNextPhoneNumber() {
     const counterRef = doc(this.db, 'counters', 'phones');
-    const phonesRef = collection(this.db, 'phones');
+    // عند عدم وجود عداد: نحسب أقصى رقم من مجموعة الهواتف خارج الـ transaction (لأن transaction.get() تقبل DocumentRef فقط)
+    let maxFromPhones = 0;
+    try {
+      const phonesSnap = await getDocs(collection(this.db, 'phones'));
+      phonesSnap.forEach((d) => {
+        const raw = d.data().phone_number;
+        const n = typeof raw === 'number' ? raw : parseInt(String(raw || '0'), 10);
+        if (!isNaN(n)) maxFromPhones = Math.max(maxFromPhones, n);
+      });
+    } catch (_) { /* تجاهل */ }
+    const initialMax = maxFromPhones;
     const nextNum = await runTransaction(this.db, async (transaction) => {
       const counterSnap = await transaction.get(counterRef);
       let next;
       if (!counterSnap.exists()) {
-        const phonesSnap = await transaction.get(phonesRef);
-        let maxN = 0;
-        phonesSnap.forEach((d) => {
-          const raw = d.data().phone_number;
-          const n = typeof raw === 'number' ? raw : parseInt(String(raw || '0'), 10);
-          if (!isNaN(n)) maxN = Math.max(maxN, n);
-        });
-        next = maxN + 1;
+        next = initialMax + 1;
         transaction.set(counterRef, { lastPhoneNumber: next });
       } else {
         const current = counterSnap.data().lastPhoneNumber || 0;

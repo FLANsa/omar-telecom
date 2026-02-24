@@ -4,10 +4,10 @@
   "description": "عمر للاتصالات - A web application for managing phone inventory and sales",
   "main": "index.html",
   "scripts": {
-    "start": "python3 -m http.server 3003",
-    "dev": "python3 -m http.server 3003",
+    "start": "python3 -m http.server 3005",
+    "dev": "python3 -m http.server 3005",
     "build": "echo 'No build step required for static site'",
-    "serve": "python3 -m http.server 3003"
+    "serve": "python3 -m http.server 3005"
   },
   "keywords": [
     "phone-store",
