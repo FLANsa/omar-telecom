@@ -1,6 +1,6 @@
 /**
  * Accessory Management Module
- * الركبي للاتصالات - Phone Store Management System
+ * عمر للاتصالات - Phone Store Management System
  */
 
 class AccessoryManager {

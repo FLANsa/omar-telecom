@@ -1,6 +1,6 @@
 /**
  * Authentication Module
- * الركبي للاتصالات - Phone Store Management System
+ * عمر للاتصالات - Phone Store Management System
  */
 
 class AuthManager {
@@ -13,7 +13,7 @@ class AuthManager {
                 password: 'admin123', // In real app, this should be hashed
                 is_admin: true,
                 full_name: 'مدير النظام',
-                email: 'admin@aldhahbi.com',
+                email: 'admin@omar-telecom.com',
                 created_at: new Date().toISOString()
             },
             {
@@ -22,7 +22,7 @@ class AuthManager {
                 password: 'user123',
                 is_admin: false,
                 full_name: 'موظف المبيعات',
-                email: 'user@aldhahbi.com',
+                email: 'user@omar-telecom.com',
                 created_at: new Date().toISOString()
             }
         ];

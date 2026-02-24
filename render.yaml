@@ -1,25 +1,25 @@
 services:
   - type: static
-    name: aldhahbi
+    name: omar-telecom
     buildCommand: ""
     staticPublishPath: ./
     envVars:
       - key: NODE_ENV
         value: production
       - key: APP_NAME
-        value: Aldhahbi
+        value: Omar telecom
       - key: APP_VERSION
         value: "2.0.0"
       - key: COMPANY_NAME
-        value: الركبي للاتصالات
+        value: عمر للاتصالات
       - key: COMPANY_NAME_EN
-        value: Al-Rakbi for Communications
+        value: Omar for Communications
       - key: COMPANY_ADDRESS
         value: الرياض، المملكة العربية السعودية
       - key: COMPANY_PHONE
-        value: "0599254441"
+        value: "0531100725"
       - key: COMPANY_EMAIL
-        value: support@aldhahbi.com
+        value: support@omar-telecom.com
       - key: VAT_RATE
         value: "0.15"
       - key: VAT_RATE_PERCENTAGE

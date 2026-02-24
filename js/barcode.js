@@ -1,6 +1,6 @@
 /**
  * Barcode Generation and Management
- * الركبي للاتصالات - Phone Store Management System
+ * عمر للاتصالات - Phone Store Management System
  */
 
 class BarcodeGenerator {

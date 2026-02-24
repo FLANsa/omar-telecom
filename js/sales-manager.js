@@ -1,6 +1,6 @@
 /**
  * Sales Management Module
- * الركبي للاتصالات - Phone Store Management System
+ * عمر للاتصالات - Phone Store Management System
  */
 
 class SalesManager {
@@ -57,7 +57,7 @@ class SalesManager {
             const sale = {
                 sale_number: IDUtils.generateSaleNumber(),
                 company_name: CONFIG.COMPANY_INFO.name,
-                company_vat_number: CONFIG.COMPANY_INFO.vatNumber,
+                company_vat_number: CONFIG.COMPANY_INFO.vatNumber || '',
                 company_address: CONFIG.COMPANY_INFO.address,
                 company_phone: CONFIG.COMPANY_INFO.phone,
                 customer_name: saleData.customer_name || 'عميل نقدي',

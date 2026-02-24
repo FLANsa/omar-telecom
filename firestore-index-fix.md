@@ -38,7 +38,7 @@ FirebaseError: The query requires an index
 ### 3. نشر الفهارس
 لنشر الفهارس إلى Firebase:
 ```bash
-firebase use aldhahbi-7a93b
+firebase use omar-telecom-682ac
 firebase deploy --only firestore:indexes
 ```
 

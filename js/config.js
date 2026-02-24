@@ -1,16 +1,16 @@
 /**
  * Configuration and Constants
- * الركبي للاتصالات - Phone Store Management System
+ * عمر للاتصالات - Phone Store Management System
  */
 
 // VAT Configuration for Saudi Arabia
 const CONFIG = {
+        nameEn: "Omar for Communications",
     VAT_RATE: 0.15, // 15% VAT rate
     COMPANY_INFO: {
-        name: "الركبي للاتصالات",
-        vatNumber: "7034630488",
+        name: "عمر للاتصالات",
         address: "الرياض، المملكة العربية السعودية",
-        phone: "0599254441"
+        phone: "0531100725"
     },
     STORAGE_KEYS: {
         PHONES: 'phone_store_phones',

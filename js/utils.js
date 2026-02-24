@@ -1,6 +1,6 @@
 /**
  * Utility Functions
- * الركبي للاتصالات - Phone Store Management System
+ * عمر للاتصالات - Phone Store Management System
  */
 
 // VAT Calculation Functions

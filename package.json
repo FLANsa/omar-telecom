@@ -1,13 +1,13 @@
 {
   "name": "تجربة-النظام-للإتصالات",
   "version": "1.0.0",
-  "description": "الركبي للاتصالات - A web application for managing phone inventory and sales",
+  "description": "عمر للاتصالات - A web application for managing phone inventory and sales",
   "main": "index.html",
   "scripts": {
-    "start": "python3 -m http.server 8000",
-    "dev": "python3 -m http.server 8000",
+    "start": "python3 -m http.server 3003",
+    "dev": "python3 -m http.server 3003",
     "build": "echo 'No build step required for static site'",
-    "serve": "python3 -m http.server 8000"
+    "serve": "python3 -m http.server 3003"
   },
   "keywords": [
     "phone-store",
@@ -19,7 +19,7 @@
     "firebase",
     "demo"
   ],
-  "author": "الركبي للاتصالات",
+  "author": "عمر للاتصالات",
   "license": "MIT",
   "repository": {
     "type": "git",

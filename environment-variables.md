@@ -1,27 +1,27 @@
-# Aldhahbi - Environment Variables
-# متغيرات البيئة لنظام إدارة متجر الجوالات
+# Omar telecom - Environment Variables
+# متغيرات البيئة لنظام عمر للاتصالات
 
 # Firebase Configuration
-FIREBASE_API_KEY=AIzaSyCOxP_fOupA-OAyO4oxYe54ohZ8_YzS7zc
-FIREBASE_AUTH_DOMAIN=aldhahbi-7a93b.firebaseapp.com
-FIREBASE_PROJECT_ID=aldhahbi-7a93b
-FIREBASE_STORAGE_BUCKET=aldhahbi-7a93b.firebasestorage.app
-FIREBASE_MESSAGING_SENDER_ID=392213757842
-FIREBASE_APP_ID=1:392213757842:web:510288ddc8ccd5d7e48b4b
-FIREBASE_MEASUREMENT_ID=G-77EPVYFWPB
+FIREBASE_API_KEY=AIzaSyAjLgTfb2TJuQ5EIyls5v1GNX21LcaZVb4
+FIREBASE_AUTH_DOMAIN=omar-telecom-682ac.firebaseapp.com
+FIREBASE_PROJECT_ID=omar-telecom-682ac
+FIREBASE_STORAGE_BUCKET=omar-telecom-682ac.firebasestorage.app
+FIREBASE_MESSAGING_SENDER_ID=357723312982
+FIREBASE_APP_ID=1:357723312982:web:a7fbe2c0e1f55f545ffcf7
+FIREBASE_MEASUREMENT_ID=G-FK23TTC0TG
 
 # Application Settings
 NODE_ENV=production
-APP_NAME=Aldhahbi
+APP_NAME=Omar telecom
 APP_VERSION=2.0.0
 APP_DESCRIPTION=نظام إدارة متجر الجوالات
 
 # Company Information
-COMPANY_NAME=الركبي للاتصالات
-COMPANY_NAME_EN=Al-Rakbi for Communications
+COMPANY_NAME=عمر للاتصالات
+COMPANY_NAME_EN=Omar for Communications
 COMPANY_ADDRESS=الرياض، المملكة العربية السعودية
-COMPANY_PHONE=0599254441
-COMPANY_EMAIL=support@aldhahbi.com
+COMPANY_PHONE=0531100725
+COMPANY_EMAIL=support@omar-telecom.com
 
 # Database Settings
 DATABASE_TYPE=firestore
@@ -31,9 +31,9 @@ DATABASE_COLLECTION_SALES=sales
 DATABASE_COLLECTION_PHONE_TYPES=phone_types
 
 # Security Settings
-JWT_SECRET=aldhahbi-secret-key-2025
-SESSION_SECRET=aldhahbi-session-secret
-ENCRYPTION_KEY=aldhahbi-encryption-key
+JWT_SECRET=omar-telecom-secret-key-2025
+SESSION_SECRET=omar-telecom-session-secret
+ENCRYPTION_KEY=omar-telecom-encryption-key
 
 # VAT Settings (Saudi Arabia)
 VAT_RATE=0.15
