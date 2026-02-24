@@ -397,10 +397,19 @@
      }catch(e){ console.error(e); alert('❌ حدث خطأ في الحذف.'); }
     }
 
-    function generatePhoneNumber(){
+    /** توليد رقم باركود محلي (للوضع غير المتصل أو عند استخدام localStorage فقط). */
+    function generatePhoneNumberLocal(){
       let last = localStorage.getItem('lastDeviceNumber')||'0';
       const next = (parseInt(last,10)+1); localStorage.setItem('lastDeviceNumber', String(next));
       return String(next).padStart(6,'0');
+    }
+
+    /** الحصول على الرقم التالي الفريد: من Firebase إن وُجد، وإلا من localStorage. */
+    async function getNextPhoneNumberForAdd(){
+      if (window.firebaseDatabase && window.storage && window.storage.isFirebaseAvailable) {
+        return await window.firebaseDatabase.getNextPhoneNumber();
+      }
+      return generatePhoneNumberLocal();
     }
 
     let isProcessing = false; // ✅ حماية من التنفيذ المتكرر
@@ -475,7 +484,7 @@
           return false;
         }
 
-        const phone_number = generatePhoneNumber();
+        const phone_number = await getNextPhoneNumberForAdd();
         const batteryLevel = document.getElementById('age').value.trim();
 
         const phoneData = {

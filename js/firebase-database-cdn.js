@@ -11,7 +11,8 @@ import {
   where, 
   orderBy,
   onSnapshot,
-  serverTimestamp 
+  serverTimestamp,
+  runTransaction
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 class FirebaseDatabase {
@@ -20,11 +21,68 @@ class FirebaseDatabase {
     this.auth = window.firebaseAuth;
   }
 
+  // ===== عداد رقم الباركود (فريد على مستوى المشروع) =====
+  /** يُرجع الرقم التالي الفريد للهاتف (مثل "000001") من عداد في Firebase لضمان عدم التكرار. */
+  async getNextPhoneNumber() {
+    const counterRef = doc(this.db, 'counters', 'phones');
+    const phonesRef = collection(this.db, 'phones');
+    const nextNum = await runTransaction(this.db, async (transaction) => {
+      const counterSnap = await transaction.get(counterRef);
+      let next;
+      if (!counterSnap.exists()) {
+        const phonesSnap = await transaction.get(phonesRef);
+        let maxN = 0;
+        phonesSnap.forEach((d) => {
+          const raw = d.data().phone_number;
+          const n = typeof raw === 'number' ? raw : parseInt(String(raw || '0'), 10);
+          if (!isNaN(n)) maxN = Math.max(maxN, n);
+        });
+        next = maxN + 1;
+        transaction.set(counterRef, { lastPhoneNumber: next });
+      } else {
+        const current = counterSnap.data().lastPhoneNumber || 0;
+        next = current + 1;
+        transaction.update(counterRef, { lastPhoneNumber: next });
+      }
+      return next;
+    });
+    return String(nextNum).padStart(6, '0');
+  }
+
+  /** التحقق من وجود هاتف بنفس رقم الباركود (للمقارنة الموحدة نص/عدد). */
+  async phoneNumberExists(phoneNumber) {
+    const normalized = String(phoneNumber || '').trim();
+    if (!normalized) return false;
+    const q = query(
+      collection(this.db, 'phones'),
+      where('phone_number', '==', normalized)
+    );
+    const snap = await getDocs(q);
+    if (!snap.empty) return true;
+    const numVal = parseInt(normalized, 10);
+    if (isNaN(numVal)) return false;
+    const qNum = query(
+      collection(this.db, 'phones'),
+      where('phone_number', '==', numVal)
+    );
+    const snapNum = await getDocs(qNum);
+    return !snapNum.empty;
+  }
+
   // ===== إدارة الهواتف =====
   async addPhone(phoneData) {
     try {
+      const phoneNumber = phoneData.phone_number != null ? String(phoneData.phone_number).trim() : '';
+      if (!phoneNumber) {
+        throw new Error('رقم الباركود (phone_number) مطلوب');
+      }
+      const exists = await this.phoneNumberExists(phoneNumber);
+      if (exists) {
+        throw new Error('رقم الباركود مستخدم مسبقاً. يرجى عدم إعادة استخدام نفس الرقم.');
+      }
       const docRef = await addDoc(collection(this.db, 'phones'), {
         ...phoneData,
+        phone_number: phoneNumber,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });

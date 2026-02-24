@@ -252,13 +252,10 @@
       }
     }catch{}
 
-    // Finally, generate a new label if nothing provided
-    const generated = (() => {
-      let last = localStorage.getItem('lastDeviceNumber')||'0';
-      const next = (parseInt(last,10)+1); localStorage.setItem('lastDeviceNumber', String(next));
-      return String(next).padStart(6,'0');
-    })();
-    fillSticker({ phone_number: generated, memory:'32GB', battery:'100' });
+    // لا نولّد رقماً جديداً هنا لتجنب فجوات وتداخل مع أرقام الهواتف المسجلة.
+    // عرض رسالة توجيهية وملصق placeholder.
+    alert('لم يتم تحديد رقم جهاز.\n\nافتح صفحة الطباعة من صفحة الهاتف (إضافة هاتف أو البحث) أو أضِف رقم الجهاز في الرابط:\nprint_barcode.html?phone_number=XXXXXX');
+    fillSticker({ phone_number: '—', memory: '—', battery: '—' });
   }
 
   document.addEventListener('DOMContentLoaded', loadPhoneData);
