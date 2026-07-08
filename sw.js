@@ -3,7 +3,7 @@
 // و cache-first لأصول CDN الثابتة (Bootstrap/الخطوط)، مع تجاهل طلبات Firebase تماماً.
 
 // ⚠️ ارفع رقم الإصدار عند أي تحديث للكود حتى تُمسح النسخ القديمة تلقائياً.
-const CACHE_NAME = 'omar-telecom-v2';
+const CACHE_NAME = 'omar-telecom-v3';
 
 // أصول أساسية يتم تخزينها مسبقاً (اختياري — للعمل دون اتصال)
 const PRECACHE_URLS = [
